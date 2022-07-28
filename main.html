@@ -3,5 +3,130 @@
         <meta charset="utf-8">
         <title>Транслітерація</title>
     </head>
-    <body></body>
+    <body>
+        <main>
+            <textarea id="input" maxlength="1024" placeholder="текст українською" autofocus></textarea>
+            <textarea id="output" placeholder="транслітерація" readonly></textarea>
+        </main>
+        <script>
+            let translit = {
+                'а': 'a',
+                'б': 'b',
+                'в': 'v',
+                'г': 'h',
+                'ґ': 'g',
+                'д': 'd',
+                'е': 'e',
+                'є': {
+                    'at_beginning': 'ye',
+                    'else': 'ie',
+                },
+                'ж': 'zh',
+                'з': {
+                    'before': {
+                        'г': 'zgh',
+                    },
+                    'else': 'z',
+                },
+                'и': 'y',
+                'і': 'i',
+                'ї': {
+                    'at_beginning': 'yi',
+                    'else': 'i',
+                },
+                'й': {
+                    'at_beginning': 'y',
+                    'else': 'i',
+                },
+                'к': 'k',
+                'л': 'l',
+                'м': 'm',
+                'н': 'n',
+                'о': 'o',
+                'п': 'p',
+                'р': 'r',
+                'с': 's',
+                'т': 't',
+                'у': 'u',
+                'ф': 'f',
+                'х': 'kh',
+                'ц': 'ts',
+                'ч': 'ch',
+                'ш': 'sh',
+                'щ': 'shch',
+                'ь': '',
+                'ю': {
+                    'at_beginning': 'yu',
+                    'else': 'iu',
+                },
+                'я': {
+                    'at_beginning': 'ya',
+                    'else': 'ia',
+                },
+                '’': '',
+                '`': '',
+                '\'': '',
+            };
+            let transliteratedLetters = Object.keys(translit);
+
+            function transliterate(input) {
+                let output = '';
+                let isLetter = false;
+                
+                for (i = 0; i < input.length; i++) {
+                    let inputChar = input[i];
+                    let nextChar = input[i+1];
+                    nextChar = typeof nextChar == 'undefined' ? '' : nextChar.toLowerCase();
+
+                    let char = inputChar.toLowerCase();
+                    let isBeginning = !isLetter;
+                    isLetter = char !== char.toUpperCase();
+
+                    if (!isLetter) {
+                        output += char;
+                        continue;
+                    }
+                    
+                    if (!transliteratedLetters.includes(char)) {
+                        output += char;
+                        continue;
+                    }
+
+                    let result = translit[char];
+
+                    if (typeof result != 'string') {
+                        if (result.hasOwnProperty('at_beginning')) {
+                            result = isBeginning ? result.at_beginning : result.else;
+                        }
+                        if (result.hasOwnProperty('before')) {
+                            if (Object.keys(result.before).includes(nextChar)) {
+                                result = result.before[nextChar];
+                                i++;
+                            } else {
+                                result = result.else;
+                            }
+                        }
+                    }
+
+                    if (char !== inputChar) {
+                        result = result.charAt(0).toUpperCase() + result.slice(1);
+                    }
+
+                    output += result;
+                }
+
+                return output;
+            }
+
+            let input = document.getElementById('input');
+            let output = document.getElementById('output');
+
+            input.addEventListener(
+                'input',
+                function(e) {
+                    output.value = transliterate(e.target.value);
+                }
+            )
+        </script>
+    </body>
 </html>
